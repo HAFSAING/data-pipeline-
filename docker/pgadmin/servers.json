@@ -1,0 +1,22 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PostgreSQL Procurement",
+      "Group": "Servers",
+      "Host": "postgres_procurement",
+      "Port": 5432,
+      "MaintenanceDB": "procurement_db",
+      "Username": "de_user",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "PostgreSQL Hive Metastore",
+      "Group": "Servers",
+      "Host": "postgres_hive",
+      "Port": 5432,
+      "MaintenanceDB": "metastore",
+      "Username": "hive",
+      "SSLMode": "prefer"
+    }
+  }
+}

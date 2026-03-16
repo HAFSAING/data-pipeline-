@@ -1,0 +1,27 @@
+# CONFIGURATION DU PIPELINE----------
+execution_date: "2026-01-14"
+
+# CHEMINS LOCAUX--------------------
+raw_orders_dir: "./data/raw/orders"
+raw_stock_dir: "./data/raw/stock"
+output_dir: "./data/output"
+
+# HDFS CONFIGURATION---------------
+hdfs_base: "/procurement"
+hdfs_url: "hdfs://namenode:9000"
+
+# BASES DE DONNÉES-----------------
+databases:
+  postgres:
+    host: "postgres_procurement"
+    port: 5432
+    db: "procurement_db"
+    user: "de_user"
+    password: "de_pass"
+  hive:
+    catalog: "hive"
+    schema: "default"
+  presto:
+    host: "presto_procurement"
+    port: 8080
+    user: "de_user"

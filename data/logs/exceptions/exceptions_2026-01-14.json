@@ -1,0 +1,45 @@
+{
+  "date": "2026-01-14",
+  "generated_at": "2026-03-16T09:17:52.581040",
+  "total": 5,
+  "errors": 0,
+  "warnings": 0,
+  "infos": 5,
+  "exceptions": [
+    {
+      "timestamp": "2026-03-16T09:17:52.547085",
+      "level": "INFO",
+      "check": "missing_pos_files",
+      "message": "Tous les fichiers POS présents",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-03-16T09:17:52.549890",
+      "level": "INFO",
+      "check": "missing_inventory",
+      "message": "Snapshot d'inventaire présent",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-03-16T09:17:52.555019",
+      "level": "INFO",
+      "check": "missing_supplier_mapping",
+      "message": "Tous les SKUs ont un fournisseur valide",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-03-16T09:17:52.573387",
+      "level": "INFO",
+      "check": "demand_spike",
+      "message": "Aucun spike de demande détecté",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-03-16T09:17:52.581016",
+      "level": "INFO",
+      "check": "inventory_inconsistency",
+      "message": "Inventaire cohérent",
+      "detail": ""
+    }
+  ]
+}

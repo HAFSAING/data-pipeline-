@@ -1,0 +1,327 @@
+services:
+  # ========== HDFS ==========
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    environment:
+      - CLUSTER_NAME=test
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+      - ../data:/data
+    env_file:
+      - ./hadoop/hadoop.env
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD", "hdfs", "dfs", "-ls", "/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    depends_on:
+      - namenode
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    env_file:
+      - ./hadoop/hadoop.env
+    ports:
+      - "9864:9864"
+    networks:
+      - procurement-net
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    depends_on:
+      - namenode
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    env_file:
+      - ./hadoop/hadoop.env
+    ports:
+      - "9865:9864"
+    networks:
+      - procurement-net
+
+  # ========== HDFS Init ==========
+  hdfs-init:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hdfs_init
+    env_file:
+      - ./hadoop/hadoop.env
+    depends_on:
+      namenode:
+        condition: service_healthy
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        hdfs dfs -mkdir -p /procurement/raw/orders
+        hdfs dfs -mkdir -p /procurement/raw/inventory
+        hdfs dfs -mkdir -p /procurement/processed/aggregated_orders
+        hdfs dfs -mkdir -p /procurement/processed/net_demand
+        hdfs dfs -mkdir -p /procurement/output/supplier_orders
+        hdfs dfs -mkdir -p /procurement/logs/exceptions
+        hdfs dfs -mkdir -p /procurement/products
+        hdfs dfs -mkdir -p /procurement/suppliers
+        echo "Repertoires HDFS crees."
+    restart: "no"
+    networks:
+      - procurement-net
+
+  # ========== PostgreSQL (Master Data) ==========
+  postgres:
+    image: postgres:15
+    container_name: postgres_procurement
+    environment:
+      POSTGRES_DB: procurement_db
+      POSTGRES_USER: de_user
+      POSTGRES_PASSWORD: de_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U de_user -d procurement_db"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+
+  # ========== PostgreSQL (Hive Metastore) ==========
+  postgres_hive:
+    image: postgres:15
+    container_name: postgres_hive
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_hive_data:/var/lib/postgresql/data
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive -d metastore"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+
+  # ========== Hive Metastore ==========
+  hive-metastore:
+    build:
+      context: ./hive
+      dockerfile: Dockerfile
+    container_name: hive_metastore
+    environment:
+      SERVICE_NAME: metastore
+      DB_DRIVER: postgres
+      SERVICE_OPTS: "-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres_hive:5432/metastore -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=hive"
+      HIVE_METASTORE_WAREHOUSE_DIR: hdfs://namenode:9000/warehouse
+    ports:
+      - "9083:9083"
+    depends_on:
+      postgres_hive:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9083"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ========== Trino ==========
+  presto:
+    image: trinodb/trino:435
+    container_name: presto_procurement
+    ports:
+      - "8080:8080"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx2g -Xms512m"
+    volumes:
+      - ./presto/catalog:/etc/trino/catalog
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/info || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    depends_on:
+      namenode:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      hive-metastore:
+        condition: service_healthy
+    restart: on-failure:3
+
+  # ========== Airflow PostgreSQL ==========
+  postgres_airflow:
+    image: postgres:15
+    container_name: postgres_airflow
+    environment:
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    volumes:
+      - postgres_airflow_data:/var/lib/postgresql/data
+    networks:
+      - procurement-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+
+  # ========== Airflow Init ==========
+  airflow-init:
+    image: apache/airflow:2.10.0
+    container_name: airflow_init
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com || true
+        echo "Init done"
+    depends_on:
+      postgres_airflow:
+        condition: service_healthy
+    networks:
+      - procurement-net
+
+  # ========== Airflow Webserver ==========
+  airflow-webserver:
+    image: apache/airflow:2.10.0
+    container_name: airflow_webserver
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+      _PIP_ADDITIONAL_REQUIREMENTS: "trino psycopg2-binary pandas pyyaml faker requests"
+    volumes:
+      - ../dags:/opt/airflow/dags
+      - ../data-generators:/opt/airflow/data-generators
+      - ../pipeline:/opt/airflow/pipeline
+      - ../config:/opt/airflow/config
+      - ../data:/opt/airflow/data
+      - ../sql-queries:/opt/airflow/sql-queries
+    command: airflow webserver
+    ports:
+      - "8082:8080"
+    restart: always
+    depends_on:
+      postgres_airflow:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      - procurement-net
+
+  # ========== Airflow Scheduler ==========
+  airflow-scheduler:
+    image: apache/airflow:2.10.0
+    container_name: airflow_scheduler
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      _PIP_ADDITIONAL_REQUIREMENTS: "trino psycopg2-binary pandas pyyaml faker requests"
+    volumes:
+      - ../dags:/opt/airflow/dags
+      - ../data-generators:/opt/airflow/data-generators
+      - ../pipeline:/opt/airflow/pipeline
+      - ../config:/opt/airflow/config
+      - ../data:/opt/airflow/data
+      - ../sql-queries:/opt/airflow/sql-queries
+    command: airflow scheduler
+    restart: always
+    depends_on:
+      postgres_airflow:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      - procurement-net
+
+  # ========== pgAdmin ==========
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_procurement
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+      - postgres_hive
+    restart: always
+    networks:
+      - procurement-net
+
+  # ========== Streamlit Dashboard ==========
+  streamlit:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    container_name: streamlit_dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../data:/app/data
+      - ../dashboard:/app
+    environment:
+      - POSTGRES_HOST=postgres_procurement
+      - POSTGRES_DB=procurement_db
+      - POSTGRES_USER=de_user
+      - POSTGRES_PASSWORD=de_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - procurement-net
+
+networks:
+  procurement-net:
+    driver: bridge
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode1:
+  hadoop_datanode2:
+  pgdata:
+  postgres_hive_data:
+  postgres_airflow_data:
+  pgadmin_data:

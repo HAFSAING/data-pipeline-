@@ -1,0 +1,4 @@
+sku,available_stock,reserved_stock,warehouse
+SKU_1001,119,6,WH_MAIN
+SKU_1002,45,20,WH_MAIN
+SKU_1003,86,19,WH_MAIN

@@ -1,0 +1,177 @@
+[
+  {
+    "order_id": "583c7920-fdfd-4651-999a-a2c4d21e4550",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 3,
+    "timestamp": "2026-01-04T07:53:38.577504"
+  },
+  {
+    "order_id": "5f2a96ef-40a6-4344-9c8d-38b6b02f57bc",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 10,
+    "timestamp": "2026-01-02T07:42:08.493024"
+  },
+  {
+    "order_id": "0215bad3-54d2-4c24-a47b-98e2e1afc2e6",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 4,
+    "timestamp": "2026-01-11T13:44:00.034878"
+  },
+  {
+    "order_id": "dc2df39a-8fd9-4c12-a216-e0218f9966ac",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 7,
+    "timestamp": "2026-01-14T09:08:19.462159"
+  },
+  {
+    "order_id": "9b916c19-664e-47a0-9e56-4d2fc45cbb8c",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 2,
+    "timestamp": "2026-01-07T01:15:38.865744"
+  },
+  {
+    "order_id": "0661c558-7109-4740-bcf1-532ef8749f3a",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 5,
+    "timestamp": "2026-01-02T11:20:40.220364"
+  },
+  {
+    "order_id": "de060b2d-f470-4b79-b852-2ea749cbf385",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 8,
+    "timestamp": "2026-01-05T22:41:04.366752"
+  },
+  {
+    "order_id": "0af88a33-fa7c-4725-a499-062ece5e2201",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 4,
+    "timestamp": "2026-01-09T15:22:19.221622"
+  },
+  {
+    "order_id": "4616d05a-87aa-4600-b159-59c46e7c405a",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 8,
+    "timestamp": "2026-01-10T14:08:38.305976"
+  },
+  {
+    "order_id": "3cff4a53-819b-47c0-9c67-1742fb2cfc28",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 2,
+    "timestamp": "2026-01-10T07:08:40.329773"
+  },
+  {
+    "order_id": "91883c27-55ec-48d7-87df-05fb1a0e6506",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 6,
+    "timestamp": "2026-01-04T15:06:33.340330"
+  },
+  {
+    "order_id": "f642f692-dd1d-4e2b-9a6f-007b58a6029e",
+    "store_id": "STORE_02",
+    "sku": "SKU_1003",
+    "quantity": 8,
+    "timestamp": "2026-01-06T23:49:24.378361"
+  },
+  {
+    "order_id": "565aba17-d894-4d3b-a617-9aed7aaf6748",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 10,
+    "timestamp": "2026-01-02T07:26:02.627665"
+  },
+  {
+    "order_id": "5060f3ad-6bb0-4a57-99ec-7e12da3469d5",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 10,
+    "timestamp": "2026-01-07T16:50:03.347256"
+  },
+  {
+    "order_id": "6acdc17e-c043-45d8-ad7d-34fa86b18307",
+    "store_id": "STORE_02",
+    "sku": "SKU_1003",
+    "quantity": 3,
+    "timestamp": "2026-01-13T09:47:59.270966"
+  },
+  {
+    "order_id": "92be0610-1b37-485e-9ec6-afb4b9004f05",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 7,
+    "timestamp": "2026-01-13T23:14:02.784573"
+  },
+  {
+    "order_id": "e3579b04-f907-48f2-a642-1500889a69d8",
+    "store_id": "STORE_02",
+    "sku": "SKU_1003",
+    "quantity": 4,
+    "timestamp": "2026-01-03T18:33:25.190059"
+  },
+  {
+    "order_id": "64942ea7-74ea-40f5-83d8-a56178e28e95",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 2,
+    "timestamp": "2026-01-06T02:05:19.205163"
+  },
+  {
+    "order_id": "9a7364cb-80f0-4bdf-ac21-c3e60d29331c",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 4,
+    "timestamp": "2026-01-10T20:51:22.517591"
+  },
+  {
+    "order_id": "e35b378f-9630-4338-ad6b-6305db9697da",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 3,
+    "timestamp": "2026-01-04T20:47:58.739549"
+  },
+  {
+    "order_id": "3cee86dc-7903-4dae-a89c-efb2923ecbe8",
+    "store_id": "STORE_02",
+    "sku": "SKU_1001",
+    "quantity": 10,
+    "timestamp": "2026-01-10T01:13:17.098867"
+  },
+  {
+    "order_id": "52206515-22ec-4254-861c-bb221ccc15e8",
+    "store_id": "STORE_02",
+    "sku": "SKU_1003",
+    "quantity": 7,
+    "timestamp": "2026-01-04T15:05:09.406961"
+  },
+  {
+    "order_id": "b32d217d-b31d-42bb-8b29-268fd10d04a6",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 3,
+    "timestamp": "2026-01-11T02:57:50.418021"
+  },
+  {
+    "order_id": "20cab67a-713c-4797-937e-6dfefd61bcd4",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 3,
+    "timestamp": "2026-01-13T07:12:47.667931"
+  },
+  {
+    "order_id": "f086c0bf-7dbf-42f8-b24f-1b73abb55afb",
+    "store_id": "STORE_02",
+    "sku": "SKU_1002",
+    "quantity": 8,
+    "timestamp": "2026-01-01T07:04:08.366484"
+  }
+]

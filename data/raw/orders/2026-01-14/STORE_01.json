@@ -1,0 +1,79 @@
+[
+  {
+    "order_id": "6461a092-616b-446e-bb67-9ba5186df986",
+    "store_id": "STORE_01",
+    "sku": "SKU_1003",
+    "quantity": 7,
+    "timestamp": "2026-01-03T19:20:34.012213"
+  },
+  {
+    "order_id": "248b8893-3ad2-4097-b635-0894816f6b66",
+    "store_id": "STORE_01",
+    "sku": "SKU_1003",
+    "quantity": 4,
+    "timestamp": "2026-01-14T13:26:13.717649"
+  },
+  {
+    "order_id": "c2213ddb-93cf-4b65-8b48-7ca61c9a77bc",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 5,
+    "timestamp": "2026-01-07T18:40:08.757573"
+  },
+  {
+    "order_id": "b1d7b2ad-ce36-466a-a5d5-965c25be4719",
+    "store_id": "STORE_01",
+    "sku": "SKU_1003",
+    "quantity": 6,
+    "timestamp": "2026-01-11T05:02:15.816537"
+  },
+  {
+    "order_id": "470b8b45-7ff8-4dec-b8fd-b8e0e5961eba",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 3,
+    "timestamp": "2026-01-13T23:38:13.697653"
+  },
+  {
+    "order_id": "865937e6-790c-4d61-bdcb-2b0b74737a57",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 2,
+    "timestamp": "2026-01-07T05:29:10.870648"
+  },
+  {
+    "order_id": "b25ea740-eebb-4462-98db-c28f4d04df55",
+    "store_id": "STORE_01",
+    "sku": "SKU_1002",
+    "quantity": 4,
+    "timestamp": "2026-01-11T10:17:28.370895"
+  },
+  {
+    "order_id": "6d6bc679-9e8d-4dd4-b63c-3a532bf0e01f",
+    "store_id": "STORE_01",
+    "sku": "SKU_1003",
+    "quantity": 5,
+    "timestamp": "2026-01-02T23:23:39.613802"
+  },
+  {
+    "order_id": "13f15f11-aa6d-4c4a-ba26-3c30064d8c80",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 10,
+    "timestamp": "2026-01-07T14:15:18.019846"
+  },
+  {
+    "order_id": "1172958a-8c6c-4467-8b54-d03f3f2b1e52",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 8,
+    "timestamp": "2026-01-03T17:35:24.559134"
+  },
+  {
+    "order_id": "1fb34491-ffba-4bb0-8d51-87cdd4a6446e",
+    "store_id": "STORE_01",
+    "sku": "SKU_1001",
+    "quantity": 5,
+    "timestamp": "2026-01-06T04:46:53.530934"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "supplier_id": "SUP_001",
+    "name": "FreshFruit Co",
+    "contact_email": "orders@freshfruit.com"
+  },
+  {
+    "supplier_id": "SUP_002",
+    "name": "DairyMax Ltd",
+    "contact_email": "procure@dairymax.com"
+  }
+]
