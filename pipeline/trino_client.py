@@ -51,11 +51,21 @@ class TrinoClient:
             cursor.close()
     
     def execute_from_file(self, filepath: str, replacements: Dict[str, str]) -> List[Dict]:
-        """Exécute une requête depuis un fichier SQL avec remplacement de variables."""
+        """
+        Exécute une requête depuis un fichier SQL avec remplacement de variables.
+        
+        Les variables dans le fichier SQL doivent être au format {{KEY}}.
+        Exemple: {{EXEC_DATE}} sera remplacé par la valeur de replacements['EXEC_DATE']
+        """
         with open(filepath, 'r') as f:
             query = f.read()
+        
+        logger.info(f"Fichier SQL: {filepath}")
         for key, value in replacements.items():
-            query = query.replace(f'{{{{${key}}}}', value)
+            pattern = f'{{{{{key}}}}}'  # Remplace {{KEY}} par {{KEY}}
+            query = query.replace(pattern, str(value))
+            logger.info(f"  Remplacement: {pattern} → {value}")
+        
         return self.execute_query(query)
     
     def aggregate_orders(self, exec_date: str) -> int:

@@ -1,41 +1,41 @@
 {
   "date": "2026-01-14",
-  "generated_at": "2026-03-16T09:17:52.581040",
+  "generated_at": "2026-03-16T18:04:38.991545",
   "total": 5,
   "errors": 0,
   "warnings": 0,
   "infos": 5,
   "exceptions": [
     {
-      "timestamp": "2026-03-16T09:17:52.547085",
+      "timestamp": "2026-03-16T18:04:38.928726",
       "level": "INFO",
       "check": "missing_pos_files",
       "message": "Tous les fichiers POS présents",
       "detail": ""
     },
     {
-      "timestamp": "2026-03-16T09:17:52.549890",
+      "timestamp": "2026-03-16T18:04:38.933354",
       "level": "INFO",
       "check": "missing_inventory",
       "message": "Snapshot d'inventaire présent",
       "detail": ""
     },
     {
-      "timestamp": "2026-03-16T09:17:52.555019",
+      "timestamp": "2026-03-16T18:04:38.941149",
       "level": "INFO",
       "check": "missing_supplier_mapping",
       "message": "Tous les SKUs ont un fournisseur valide",
       "detail": ""
     },
     {
-      "timestamp": "2026-03-16T09:17:52.573387",
+      "timestamp": "2026-03-16T18:04:38.966330",
       "level": "INFO",
       "check": "demand_spike",
       "message": "Aucun spike de demande détecté",
       "detail": ""
     },
     {
-      "timestamp": "2026-03-16T09:17:52.581016",
+      "timestamp": "2026-03-16T18:04:38.990792",
       "level": "INFO",
       "check": "inventory_inconsistency",
       "message": "Inventaire cohérent",

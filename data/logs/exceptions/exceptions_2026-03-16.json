@@ -1,0 +1,31 @@
+{
+  "date": "2026-03-16",
+  "generated_at": "2026-03-16T18:04:05.274728",
+  "total": 3,
+  "errors": 2,
+  "warnings": 0,
+  "infos": 1,
+  "exceptions": [
+    {
+      "timestamp": "2026-03-16T18:04:05.263223",
+      "level": "ERROR",
+      "check": "missing_pos_files",
+      "message": "Répertoire commandes absent pour 2026-03-16",
+      "detail": "/opt/airflow/data/raw/orders/2026-03-16"
+    },
+    {
+      "timestamp": "2026-03-16T18:04:05.266048",
+      "level": "ERROR",
+      "check": "missing_inventory",
+      "message": "Snapshot d'inventaire absent pour 2026-03-16",
+      "detail": "/opt/airflow/data/raw/stock/2026-03-16/inventory.csv"
+    },
+    {
+      "timestamp": "2026-03-16T18:04:05.271064",
+      "level": "INFO",
+      "check": "missing_supplier_mapping",
+      "message": "Tous les SKUs ont un fournisseur valide",
+      "detail": ""
+    }
+  ]
+}

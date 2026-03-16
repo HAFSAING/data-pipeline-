@@ -7,7 +7,7 @@ services:
       - CLUSTER_NAME=test
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
-      - ../data:/data
+      - ../data:/data  
     env_file:
       - ./hadoop/hadoop.env
     ports:
@@ -227,12 +227,12 @@ services:
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
       _PIP_ADDITIONAL_REQUIREMENTS: "trino psycopg2-binary pandas pyyaml faker requests"
     volumes:
-      - ../dags:/opt/airflow/dags
-      - ../data-generators:/opt/airflow/data-generators
-      - ../pipeline:/opt/airflow/pipeline
-      - ../config:/opt/airflow/config
-      - ../data:/opt/airflow/data
-      - ../sql-queries:/opt/airflow/sql-queries
+      - ../dags:/opt/airflow/dags                           # DAG scripts
+      - ../data-generators:/opt/airflow/data-generators     # Data generation scripts
+      - ../pipeline:/opt/airflow/pipeline                   # Pipeline modules (TrinoClient, etc.)
+      - ../config:/opt/airflow/config                       # pipeline_config.yaml
+      - ../data:/opt/airflow/data                           # UNIQUE DATA FOLDER (parquet, JSON, logs)
+      - ../sql-queries:/opt/airflow/sql-queries             # SQL queries
     command: airflow webserver
     ports:
       - "8082:8080"
@@ -255,12 +255,12 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       _PIP_ADDITIONAL_REQUIREMENTS: "trino psycopg2-binary pandas pyyaml faker requests"
     volumes:
-      - ../dags:/opt/airflow/dags
-      - ../data-generators:/opt/airflow/data-generators
-      - ../pipeline:/opt/airflow/pipeline
-      - ../config:/opt/airflow/config
-      - ../data:/opt/airflow/data
-      - ../sql-queries:/opt/airflow/sql-queries
+      - ../dags:/opt/airflow/dags                           # DAG scripts
+      - ../data-generators:/opt/airflow/data-generators     # Data generation scripts
+      - ../pipeline:/opt/airflow/pipeline                   # Pipeline modules (TrinoClient, etc.)
+      - ../config:/opt/airflow/config                       # pipeline_config.yaml
+      - ../data:/opt/airflow/data                           # UNIQUE DATA FOLDER (parquet, JSON, logs)
+      - ../sql-queries:/opt/airflow/sql-queries             # SQL queries
     command: airflow scheduler
     restart: always
     depends_on:
@@ -299,7 +299,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ../data:/app/data
+      - ../data:/app/data                                   # UNIQUE DATA FOLDER
       - ../dashboard:/app
     environment:
       - POSTGRES_HOST=postgres_procurement

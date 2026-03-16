@@ -4,32 +4,19 @@
 -- Inclut: ranked_suppliers (1 fournisseur préféré par SKU) + estimated_cost
 -- =====================================================
 
-DROP TABLE IF EXISTS hive.raw.inventory_raw;
-CREATE TABLE hive.raw.inventory_raw (
-  sku VARCHAR,
-  available_stock INTEGER,
-  reserved_stock INTEGER,
-  warehouse VARCHAR
-)
-WITH (
-  format = 'CSV',
-  external_location = 'hdfs://namenode:9000/raw/stock/{{EXEC_DATE}}/inventory.csv',
-  skip_header_line_count = 1
-);
-
-DROP TABLE IF EXISTS hive.processed.net_demand;
-CREATE TABLE hive.processed.net_demand AS
+CREATE TABLE IF NOT EXISTS processed.net_demand AS
 
 WITH demand AS (
   SELECT sku, total_demand
-  FROM hive.processed.aggregated_orders
+  FROM processed.aggregated_orders
 ),
 
 inv AS (
   SELECT sku,
          SUM(available_stock) AS available_stock,
          SUM(reserved_stock)  AS reserved_stock
-  FROM hive.raw.inventory_raw
+  FROM raw.inventory
+  WHERE exec_date = '{{EXEC_DATE}}'
   GROUP BY sku
 ),
 
@@ -99,4 +86,4 @@ SELECT
   -- estimated_cost = quantité finale × coût unitaire
   CAST(final_order_qty AS DOUBLE) * unit_cost AS estimated_cost
 FROM net_calc
-WHERE final_order_qty >= moq;
+WHERE final_order_qty >= moq
