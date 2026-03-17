@@ -88,7 +88,7 @@ docker exec airflow_scheduler python /opt/airflow/pipeline/orchestrator.py
 ## Structure du projet
 
 ```
-procurement-pipeline/
+data_pipeline/
 ├── config/
 │   └── pipeline_config.yaml
 ├── dags/
@@ -114,19 +114,24 @@ procurement-pipeline/
 │   └── generate_suppliers.py
 ├── dashboard/
 │   ├── dashboard.py
-│   └── Dockerfile
+│   └── data/                         # Données dashboard (montées via Docker)
 ├── docker/
 │   ├── docker-compose.yml
-│   ├── hadoop/hadoop.env
-│   ├── hive/Dockerfile
-│   ├── pgadmin/servers.json
+│   ├── hadoop/
+│   │   └── hadoop.env
+│   ├── hive/
+│   │   └── Dockerfile
+│   ├── pgadmin/
+│   │   └── servers.json
 │   ├── postgres/
 │   │   ├── init.sql                  # products + suppliers + product_suppliers
 │   │   └── init_hive.sql
-│   └── presto/catalog/
-│       ├── hive.properties
-│       └── postgresql.properties
+│   └── presto/
+│       └── catalog/
+│           ├── hive.properties
+│           └── postgresql.properties
 ├── data/                             # Données runtime (ne pas versionner)
+├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
@@ -152,7 +157,9 @@ procurement-pipeline/
 ```
 setup_trino_hive
       |
-generate_data
+generate_orders     generate_inventory     generate_products     generate_suppliers
+        \                |                      |                    /
+         \_______________|______________________|___________________/
       |
 convert_parquet
       |

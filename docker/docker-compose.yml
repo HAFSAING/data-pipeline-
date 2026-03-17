@@ -300,7 +300,7 @@ services:
       - "8501:8501"
     volumes:
       - ../data:/app/data                                   # UNIQUE DATA FOLDER
-      - ../dashboard:/app
+      - ../dashboard:/app:ro                                # code dashboard en lecture seule (évite création de /dashboard/data)
     environment:
       - POSTGRES_HOST=postgres_procurement
       - POSTGRES_DB=procurement_db

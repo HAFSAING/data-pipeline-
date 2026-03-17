@@ -14,6 +14,9 @@ logs/
 # Local runtime data (generated)
 data/
 
+# Dashboard local artifacts (should not be versioned)
+dashboard/data/
+
 # OS
 Thumbs.db
 Desktop.ini
