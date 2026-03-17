@@ -3,36 +3,185 @@ import pandas as pd
 import psycopg2
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 from datetime import datetime, timedelta
 import os
 import json
 
-st.set_page_config(page_title="Procurement Pipeline Dashboard", layout="wide")
+st.set_page_config(page_title="Dashboard", layout="wide")
 
 st.markdown("""
 <style>
-    .stApp { background: linear-gradient(135deg, #040D12 0%, #183D3D 100%); }
-    .main .block-container {
-        background-color: rgba(93, 177, 166, 0.15);
-        border-radius: 10px; padding: 2rem;
-        backdrop-filter: blur(10px); border: 1px solid #5C8374;
+    :root {
+        --bg: #213C51;         /* principal */
+        --surface: #EEEEEE;    /* surface/cards */
+        --accent: #6594B1;     /* secondaire 1 */
+        --accent-2: #DDAED3;   /* secondaire 2 */
+        --text: #213C51;       /* texte sur surfaces claires */
+        --text-on-dark: #EEEEEE;
     }
-    .stMetric { background-color: #FFFFFF !important; padding: 1rem; border-radius: 8px; border: 1px solid #5C8374; }
-    .stMetric > div, .stMetric label { color: #000000 !important; font-weight: bold; }
-    [data-testid="stMetricValue"], [data-testid="stMetricLabel"] { color: #000000 !important; }
-    .stDataFrame { background-color: rgba(147,177,166,0.2); border-radius: 8px; border: 1px solid #5C8374; }
-    h1, h2, h3 { color: #FFFFFF !important; }
-    .stTabs [data-baseweb="tab-list"] { background-color: #183D3D; border-radius: 8px; padding: 4px; }
-    .stTabs [data-baseweb="tab"] { color: #FFFFFF !important; background-color: transparent; border-radius: 6px; margin: 2px; font-weight: 500; }
-    .stTabs [aria-selected="true"] { background-color: #5C8374 !important; color: #FFFFFF !important; font-weight: bold; }
-    .stSidebar { background-color: #FFFFFF; }
-    .stSidebar h2, .stSidebar h3, .stSidebar p, .stSidebar div, .stSidebar span, .stSidebar label { color: #000000 !important; }
-    .stButton > button { background-color: #183D3D; color: #FFFFFF; border: none; border-radius: 6px; font-weight: 500; }
-    .stButton > button:hover { background-color: #5C8374; color: #FFFFFF; }
-    p, div, span { color: #FFFFFF !important; }
-    .stMetric p, .stMetric div, .stMetric span { color: #000000 !important; }
+
+    /* App background (principal) */
+    html, body {
+        background-color: var(--bg) !important;
+    }
+    .stApp {
+        background-color: var(--bg) !important;
+        background: var(--bg) !important;
+    }
+
+    /* Make outer shell dark */
+    [data-testid="stAppViewContainer"] { background-color: var(--bg) !important; }
+    [data-testid="stHeader"] { background-color: var(--bg) !important; }
+    [data-testid="stToolbar"] { background-color: transparent !important; }
+    [data-testid="stDecoration"] { background-color: transparent !important; }
+    [data-testid="stStatusWidget"] { background-color: transparent !important; }
+
+    /* Default text on dark background (outside cards) */
+    body, [data-testid="stAppViewContainer"] { color: var(--text-on-dark) !important; }
+
+    .main .block-container {
+        background-color: rgba(238, 238, 238, 0.92);
+        border-radius: 14px; padding: 2rem;
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(101, 148, 177, 0.35);
+        box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
+    .stMetric { background-color: var(--surface) !important; padding: 1rem; border-radius: 12px; border: 1px solid rgba(33, 60, 81, 0.18); }
+    .stMetric > div, .stMetric label { color: var(--text) !important; font-weight: 750; }
+    [data-testid="stMetricValue"], [data-testid="stMetricLabel"] { color: var(--text) !important; }
+
+    .stDataFrame { background-color: rgba(238, 238, 238, 0.85); border-radius: 12px; border: 1px solid rgba(33, 60, 81, 0.18); }
+
+    h1, h2, h3 { color: #000000 !important; }
+    h1 {
+        text-align: center;
+        color: var(--text-on-dark) !important;
+        background-color: var(--bg) !important;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        display: block;
+        width: fit-content;
+        margin: 0 auto 1rem auto;
+    }
+
+    .stTabs [data-baseweb="tab-list"] { background-color: rgba(101, 148, 177, 0.18); border-radius: 10px; padding: 4px; }
+    .stTabs [data-baseweb="tab"] { color: var(--text) !important; background-color: transparent; border-radius: 8px; margin: 2px; font-weight: 650; }
+    .stTabs [aria-selected="true"] { background-color: var(--accent) !important; color: var(--text-on-dark) !important; font-weight: 800; }
+
+    /* Sidebar (black) */
+    section[data-testid="stSidebar"],
+    [data-testid="stSidebarContent"] {
+        background-color: var(--bg) !important;
+        border-right: 1px solid rgba(101, 148, 177, 0.55) !important;
+    }
+
+    /* Sidebar text */
+    section[data-testid="stSidebar"] * {
+        color: var(--text-on-dark) !important;
+    }
+
+    /* Sidebar widgets */
+    section[data-testid="stSidebar"] [data-baseweb="select"] > div,
+    section[data-testid="stSidebar"] input,
+    section[data-testid="stSidebar"] textarea {
+        background-color: rgba(238, 238, 238, 0.08) !important;
+        color: var(--text-on-dark) !important;
+        border-color: rgba(101, 148, 177, 0.65) !important;
+    }
+
+    /* Sidebar status/alerts (success/info/warning) */
+    section[data-testid="stSidebar"] [data-testid="stAlert"] {
+        background-color: rgba(238, 238, 238, 0.08) !important;
+        border: 1px solid rgba(101, 148, 177, 0.55) !important;
+    }
+    section[data-testid="stSidebar"] [data-testid="stAlert"] svg {
+        fill: var(--accent-2) !important;
+    }
+
+    /* Expander */
+    section[data-testid="stSidebar"] [data-testid="stExpander"] {
+        background-color: rgba(238, 238, 238, 0.06) !important;
+        border: 1px solid rgba(101, 148, 177, 0.45) !important;
+        border-radius: 10px !important;
+    }
+    section[data-testid="stSidebar"] [data-testid="stExpander"] summary {
+        color: var(--text-on-dark) !important;
+    }
+
+    .stButton > button { background-color: var(--accent); color: var(--text-on-dark); border: none; border-radius: 10px; font-weight: 750; }
+    .stButton > button:hover { background-color: var(--accent-2); color: var(--bg); }
+
+    /* Main content text stays dark on light surface */
+    [data-testid="stMainBlockContainer"] p,
+    [data-testid="stMainBlockContainer"] div,
+    [data-testid="stMainBlockContainer"] span,
+    [data-testid="stMainBlockContainer"] label {
+        color: var(--text) !important;
+    }
+    .stMetric p, .stMetric div, .stMetric span { color: var(--text) !important; }
+
+    /* Alerts in main page: remove Streamlit default blue/green */
+    [data-testid="stAlert"] {
+        background-color: rgba(238, 238, 238, 0.92) !important;
+        border: 1px solid rgba(33, 60, 81, 0.18) !important;
+        border-left: 6px solid var(--accent-2) !important;
+        border-radius: 12px !important;
+    }
+    [data-testid="stAlert"] svg { fill: var(--accent-2) !important; }
+
+    /* Selectbox dropdown highlight (avoid blue) */
+    [data-baseweb="menu"] {
+        background-color: rgba(238, 238, 238, 0.98) !important;
+        border: 1px solid rgba(33, 60, 81, 0.18) !important;
+    }
+    [role="option"][aria-selected="true"] {
+        background-color: rgba(221, 174, 211, 0.35) !important;
+        color: var(--text) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+THEME = {
+    "bg": "#213C51",
+    "surface": "#EEEEEE",
+    "accent": "#6594B1",
+    "accent_2": "#DDAED3",
+    "text": "#213C51",
+    "accent_soft": "rgba(101,148,177,0.55)",
+    "accent_2_soft": "rgba(221,174,211,0.55)",
+    "text_soft": "rgba(33,60,81,0.55)",
+}
+
+COLORWAY = [
+    THEME["accent"],
+    THEME["accent_2"],
+    THEME["text"],
+    THEME["accent_soft"],
+    THEME["accent_2_soft"],
+    THEME["text_soft"],
+]
+
+
+def apply_plotly_theme(fig, title: str | None = None):
+    fig.update_layout(
+        template="plotly_white",
+        colorway=COLORWAY,
+        font_color="#000000",
+        title_font=dict(color="#000000"),
+        title=title if title is not None else fig.layout.title,
+        plot_bgcolor=THEME["surface"],
+        paper_bgcolor=THEME["surface"],
+        legend=dict(font=dict(color="#000000")),
+        xaxis=dict(gridcolor="rgba(34,34,34,0.12)", zerolinecolor="rgba(34,34,34,0.18)"),
+        yaxis=dict(gridcolor="rgba(34,34,34,0.12)", zerolinecolor="rgba(34,34,34,0.18)"),
+    )
+    fig.update_xaxes(title_font=dict(color="#000000"), tickfont=dict(color="#000000"))
+    fig.update_yaxes(title_font=dict(color="#000000"), tickfont=dict(color="#000000"))
+    return fig
+
+
+pio.templates.default = "plotly_white"
 
 DB_CONFIG = {
     'host':     os.getenv('POSTGRES_HOST', 'localhost'),
@@ -49,6 +198,55 @@ def get_db_connection():
     except Exception as e:
         st.error(f"Erreur connexion DB: {e}")
         return None
+
+
+def _safe_parse_iso(dt_str: str):
+    if not dt_str:
+        return None
+    try:
+        return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def get_latest_db_timestamps():
+    conn = get_db_connection()
+    if not conn:
+        return {}
+    try:
+        q = """
+        SELECT
+          (SELECT MAX(created_at) FROM net_demand)         AS net_demand_max_created_at,
+          (SELECT MAX(exec_date)   FROM net_demand)         AS net_demand_max_exec_date,
+          (SELECT MAX(created_at) FROM aggregated_orders)  AS aggregated_max_created_at,
+          (SELECT MAX(exec_date)   FROM aggregated_orders)  AS aggregated_max_exec_date
+        """
+        df = pd.read_sql(q, conn)
+        if df.empty:
+            return {}
+        row = df.iloc[0].to_dict()
+        return row
+    except Exception as e:
+        st.sidebar.warning(f"Impossible de lire les timestamps DB: {e}")
+        return {}
+
+
+def get_latest_json_mtime(output_dir: str):
+    if not output_dir or not os.path.exists(output_dir):
+        return None
+    latest = None
+    for root, _dirs, files in os.walk(output_dir):
+        for file in files:
+            if not file.endswith(".json"):
+                continue
+            fp = os.path.join(root, file)
+            try:
+                mtime = datetime.fromtimestamp(os.path.getmtime(fp))
+            except Exception:
+                continue
+            if latest is None or mtime > latest:
+                latest = mtime
+    return latest
 
 @st.cache_data(ttl=None)
 def load_products():
@@ -158,7 +356,7 @@ def load_supplier_orders():
     return pd.DataFrame(orders_data)
 
 # ─── Interface principale ──────────────────────────────────────────────────────
-st.title("Procurement Pipeline Dashboard")
+st.markdown("<h1>Dashboard</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
 st.sidebar.header("Filtres")
@@ -166,6 +364,8 @@ st.sidebar.header("Filtres")
 # Auto-refresh si Airflow a terminé
 flag_file  = '/app/data/.last_update'
 check_file = '/app/data/.last_check'
+output_dir = "/app/data/output"
+
 if os.path.exists(flag_file):
     with open(flag_file, 'r') as f:
         current_update = f.read().strip()
@@ -179,6 +379,37 @@ if os.path.exists(flag_file):
         st.cache_data.clear()
         st.rerun()
     st.sidebar.success(f"Dernière mise à jour: {current_update[:19]}")
+
+# Statut de synchronisation (DB + fichiers)
+with st.sidebar.expander("Statut de synchronisation", expanded=False):
+    last_update_dt = None
+    if os.path.exists(flag_file):
+        try:
+            with open(flag_file, 'r') as f:
+                last_update_dt = _safe_parse_iso(f.read().strip())
+        except Exception:
+            last_update_dt = None
+
+    db_ts = get_latest_db_timestamps()
+    json_latest = get_latest_json_mtime(output_dir)
+
+    st.write(f"- **Flag `.last_update`**: `{last_update_dt}`" if last_update_dt else "- **Flag `.last_update`**: (absent)")
+    st.write(f"- **Dernier JSON exporté**: `{json_latest}`" if json_latest else "- **Dernier JSON exporté**: (aucun)")
+
+    nd_max = db_ts.get("net_demand_max_created_at")
+    ao_max = db_ts.get("aggregated_max_created_at")
+    st.write(f"- **DB net_demand MAX(created_at)**: `{nd_max}`" if nd_max else "- **DB net_demand MAX(created_at)**: (vide)")
+    st.write(f"- **DB aggregated_orders MAX(created_at)**: `{ao_max}`" if ao_max else "- **DB aggregated_orders MAX(created_at)**: (vide)")
+
+    # Heuristique: si le flag est plus vieux que DB/JSON, Streamlit ne “voit” pas la dernière exécution
+    ref_times = [t for t in [json_latest, nd_max, ao_max] if t is not None]
+    newest_data = max(ref_times) if ref_times else None
+    if last_update_dt and newest_data and last_update_dt + timedelta(seconds=30) < newest_data:
+        st.warning("Le flag `.last_update` semble plus ancien que les données (DB/JSON). Le dashboard peut ne pas se rafraîchir automatiquement.")
+    elif newest_data and not last_update_dt:
+        st.info("Des données existent (DB/JSON) mais `.last_update` est absent. L’auto-refresh ne fonctionnera pas.")
+    elif newest_data and last_update_dt:
+        st.success("Flag et données semblent cohérents.")
 
 # ─── Chargement des données ────────────────────────────────────────────────────
 products_df  = load_products()
@@ -215,8 +446,8 @@ with tab1:
             supplier_counts = products_df.groupby('supplier_id').size().reset_index(name='count')
             fig = px.pie(supplier_counts, values='count', names='supplier_id',
                          title="Répartition des produits",
-                         color_discrete_sequence=['#1D9E75','#378ADD','#EF9F27','#D4537E'])
-            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFFFFF')
+                         color_discrete_sequence=[THEME["accent"], THEME["text"], THEME["accent_soft"], THEME["text_soft"]])
+            apply_plotly_theme(fig)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Aucune donnée produit disponible")
@@ -227,8 +458,8 @@ with tab1:
             supplier_orders = orders_df.groupby('supplier_id')['quantity'].sum().reset_index()
             fig = px.bar(supplier_orders, x='supplier_id', y='quantity',
                          title="Volume de commandes par fournisseur",
-                         color_discrete_sequence=['#1D9E75'])
-            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFFFFF')
+                         color_discrete_sequence=[THEME["accent"]])
+            apply_plotly_theme(fig)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Aucune commande générée — lancez le pipeline d'abord")
@@ -253,7 +484,8 @@ with tab3:
     st.header("Commandes Fournisseurs")
     if not orders_df.empty:
         dates = sorted(orders_df['date'].unique(), reverse=True)
-        selected_date = st.selectbox("Sélectionner une date", dates)
+        st.markdown("<div style='color:#000000;font-weight:700;margin-bottom:0.25rem;'>Sélectionner une date</div>", unsafe_allow_html=True)
+        selected_date = st.selectbox("Sélectionner une date", dates, label_visibility="collapsed")
         filtered = orders_df[orders_df['date'] == selected_date]
 
         # Résumé coûts
@@ -274,8 +506,8 @@ with tab3:
             sku_totals = filtered.groupby('sku')['quantity'].sum().reset_index()
             fig = px.bar(sku_totals, x='sku', y='quantity',
                          title=f"Quantités commandées — {selected_date}",
-                         color_discrete_sequence=['#1D9E75'])
-            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFFFFF')
+                         color_discrete_sequence=[THEME["accent"]])
+            apply_plotly_theme(fig)
             st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Aucune commande disponible. Exécutez le pipeline d'abord.")
@@ -290,8 +522,8 @@ with tab4:
             demand_evolution = net_demand_df.groupby(['exec_date', 'sku'])['total_demand'].sum().reset_index()
             fig = px.line(demand_evolution, x='exec_date', y='total_demand',
                           color='sku', title="Évolution de la demande par produit",
-                          color_discrete_sequence=['#1D9E75','#378ADD','#EF9F27'])
-            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFFFFF')
+                          color_discrete_sequence=[THEME["accent"], THEME["text"], THEME["accent_soft"], THEME["text_soft"]])
+            apply_plotly_theme(fig)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Aucune donnée de demande disponible")
@@ -303,11 +535,11 @@ with tab4:
             # Dédupliquer par SKU (prendre la ligne la plus récente)
             safety_analysis = safety_analysis.drop_duplicates(subset=['sku'], keep='first')
             fig = go.Figure()
-            fig.add_trace(go.Bar(name='Stock Sécurité',  x=safety_analysis['sku'], y=safety_analysis['safety_stock'],  marker_color='#378ADD'))
-            fig.add_trace(go.Bar(name='Demande Totale',  x=safety_analysis['sku'], y=safety_analysis['total_demand'],  marker_color='#1D9E75'))
-            fig.add_trace(go.Bar(name='Commande Finale', x=safety_analysis['sku'], y=safety_analysis['final_order_qty'], marker_color='#EF9F27'))
-            fig.update_layout(title="Analyse Stock vs Demande", barmode='group',
-                              plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFFFFF')
+            fig.add_trace(go.Bar(name='Stock Sécurité',  x=safety_analysis['sku'], y=safety_analysis['safety_stock'],  marker_color=THEME["text_soft"]))
+            fig.add_trace(go.Bar(name='Demande Totale',  x=safety_analysis['sku'], y=safety_analysis['total_demand'],  marker_color=THEME["accent_soft"]))
+            fig.add_trace(go.Bar(name='Commande Finale', x=safety_analysis['sku'], y=safety_analysis['final_order_qty'], marker_color=THEME["accent"]))
+            fig.update_layout(barmode='group')
+            apply_plotly_theme(fig, title="Analyse Stock vs Demande")
             st.plotly_chart(fig, use_container_width=True)
 
             # Tableau coûts estimés
@@ -318,4 +550,4 @@ with tab4:
                 st.dataframe(cost_display, use_container_width=True)
 
 st.markdown("---")
-st.markdown("**Procurement Pipeline Dashboard** — Données mises à jour automatiquement après exécution Airflow")
+st.markdown("<div style='color:#000000; font-weight:700;'>Dashboard — Données mises à jour automatiquement après exécution Airflow</div>", unsafe_allow_html=True)
