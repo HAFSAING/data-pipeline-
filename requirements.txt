@@ -3,3 +3,9 @@ pandas==2.1.4
 psycopg2-binary==2.9.9
 plotly==5.17.0
 numpy==1.24.3
+requests==2.32.3
+PyYAML==6.0.2
+trino==0.333.0
+pyarrow==17.0.0
+faker==25.9.1
+openpyxl==3.1.5

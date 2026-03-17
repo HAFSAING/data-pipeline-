@@ -58,8 +58,9 @@ watch -n 5 docker-compose ps
 
 # 2. HDFS initialisé automatiquement via hdfs-init (entrypoint Docker)
 
-# 3. Créer les tables Trino (une seule fois)
-#    Airflow UI : http://localhost:8082 → DAG trino_setup → Trigger
+# 3. Créer/aligner les tables Trino/Hive
+#    ✅ Plus besoin d'un DAG séparé: le DAG `procurement_pipeline_v2`
+#    commence par la tâche `setup_trino_hive` (idempotent).
 
 # 4. Générer les données de test
 docker exec airflow_scheduler python /opt/airflow/data-generators/generate_orders.py
@@ -91,8 +92,7 @@ procurement-pipeline/
 ├── config/
 │   └── pipeline_config.yaml
 ├── dags/
-│   ├── procurement_dag.py            # DAG principal (22h00, 7 tâches)
-│   └── trino_setup_dag.py            # Init tables Hive/Trino (une fois)
+│   └── procurement_dag.py            # DAG unique (setup + pipeline complet)
 ├── pipeline/
 │   ├── __init__.py
 │   ├── trino_client.py
@@ -150,16 +150,22 @@ procurement-pipeline/
 ## DAG Airflow
 
 ```
+setup_trino_hive
+      |
+generate_data
+      |
+convert_parquet
+      |
+ingest_to_hdfs
+      |
 sync_partitions
       |
 aggregate_orders
       |
 calculate_net_demand
-      |----------------|
-  export_orders   quality_checks
-      |----------------|
-      |
-ingest_to_hdfs
+      |---------------------|
+  export_orders       quality_checks
+      |---------------------|
       |
 copy_to_processed
 ```
@@ -207,19 +213,9 @@ Le fournisseur est selectionne via ranked_suppliers (priority ASC, unit_cost ASC
 | priority     | INT           | Priorite (1 = prefere)            |
 | is_preferred | BOOLEAN       | Fournisseur prefere ?             |
 
-### net_demand
-| Colonne         | Type          | Description                  |
-|-----------------|---------------|------------------------------|
-| sku             | VARCHAR(20)   | Identifiant produit          |
-| supplier_id     | VARCHAR(20)   | Fournisseur retenu           |
-| total_demand    | INT           | Demande agregeee du jour     |
-| available_stock | INT           | Stock disponible             |
-| safety_stock    | INT           | Stock de securite            |
-| net_demand      | INT           | Demande nette calculee       |
-| final_order_qty | INT           | Quantite finale a commander  |
-| unit_cost       | DECIMAL(10,2) | Cout unitaire fournisseur    |
-| estimated_cost  | DECIMAL(12,2) | Cout total estime            |
-| exec_date       | DATE          | Date execution pipeline      |
+### (Important) net_demand n'est PAS dans PostgreSQL
+Le pipeline écrit `net_demand` dans **Hive/Trino** (`processed.net_demand`) au format Parquet (HDFS),
+et utilise PostgreSQL uniquement pour les master data (`products`, `suppliers`, `product_suppliers`).
 
 ## Format JSON fournisseurs
 
